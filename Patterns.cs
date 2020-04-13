@@ -74,10 +74,10 @@ namespace _2DPatterns
                 if (y == 574)
                 {
                     var roww = GetRow(y, width);
-                    var levels = _sequenceToItsLocalElementLevelsConverter.Convert(roww);
-                    var l276 = levels[276];
-                    var l277 = levels[277];
-                    var l278 = levels[278];
+                    var levelss = _sequenceToItsLocalElementLevelsConverter.Convert(roww);
+                    var l276 = levelss[276];
+                    var l277 = levelss[277];
+                    var l278 = levelss[278];
                 }
 
                 var row = SaveRow(y, width);
@@ -148,11 +148,7 @@ namespace _2DPatterns
                     linksByUsages.Add(usages, linksByUsageList);
                 }
                 linksByUsageList.Add(linkIndex);
-                var frequency = (_linkFrequenciesCache.GetFrequency(_links.GetSource(link), _links.GetTarget(link)) ?? new LinkFrequency<ulong>(0, 0)).Frequency;
-                if (frequency == default)
-                {
-                    frequency = _totalSequenceSymbolFrequencyCounter.Count(linkIndex);
-                }
+                ulong frequency = GetFrequency(link);
                 if (!linksByFrequency.TryGetValue(frequency, out List<ulong> linksByFrequencyList))
                 {
                     linksByFrequencyList = new List<ulong>();
@@ -164,9 +160,63 @@ namespace _2DPatterns
 
             // Build matrix of levels on 2D plane (as in optimal variant algorithm)
 
-            // Get the largest repeated patterns
+            var levels = new ulong[width, height];
+
+            var topBottom = 0UL;
+            var leftRight = 0UL;
+            var bottomTop = 0UL;
+            var rightLeft = 0UL;
+
+            var lastX = width - 1;
+            var lastY = height - 1;
+
+            for (int x = 1; x < lastX; x++)
+            {
+                for (int y = 1; y < lastY; y++)
+                {
+                    topBottom = GetFrequency(matrix[x - 1, y].Value[0], matrix[x, y].Value[0]);
+                    leftRight = GetFrequency(matrix[x, y - 1].Key[0], matrix[x, y].Key[0]);
+                    bottomTop = GetFrequency(matrix[x, y].Value[0], matrix[x + 1, y].Value[0]);
+                    rightLeft = GetFrequency(matrix[x, y].Key[0], matrix[x, y + 1].Key[0]);
+
+                    levels[x, y] = Math.Max(Math.Max(topBottom, leftRight), Math.Max(bottomTop, rightLeft));
+                }
+            }
+
+
+            for (int x = 1; x < lastX; x++)
+            {
+                for (int y = 1; y < lastY; y++)
+                {
+                    Console.Write("{0:0000}", levels[x, y]);
+                    Console.Write(' ');
+                }
+                Console.WriteLine();
+            }
+
+            // Get the largest repeated patterns with lowest frequency (level)
+
 
         }
+
+        private ulong GetFrequency(ulong link) => GetFrequency(_links.GetLink(link));
+
+        private ulong GetFrequency(ulong source, ulong target)
+        {
+            return GetFrequency(_links.SearchOrDefault(source, target), source, target);
+        }
+
+        private ulong GetFrequency(ulong linkIndex, ulong source, ulong target)
+        {
+            var frequency = (_linkFrequenciesCache.GetFrequency(source, target) ?? new LinkFrequency<ulong>(0, 0)).Frequency;
+            if (frequency == default && linkIndex > 0)
+            {
+                frequency = _totalSequenceSymbolFrequencyCounter.Count(linkIndex);
+            }
+            return frequency;
+        }
+
+        private ulong GetFrequency(IList<ulong> link) => GetFrequency(link[0], link[1], link[2]);
 
         private void IndexRow(int y, int width)
         {
