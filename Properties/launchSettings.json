@@ -2,7 +2,7 @@
   "profiles": {
     "2DPatterns": {
       "commandName": "Project",
-      "commandLineArgs": "input.png"
+      "commandLineArgs": "112_113_bw.png"
     }
   }
 }
