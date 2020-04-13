@@ -129,6 +129,43 @@ namespace _2DPatterns
                         return true;
                     });
             }
+
+            // Sort sequences by usages and frequency
+
+            var linksByUsages = new SortedDictionary<ulong, List<ulong>>();
+            var linksByFrequency = new SortedDictionary<ulong, List<ulong>>();
+
+            var any = _links.Constants.Any;
+            var @continue = _links.Constants.Continue;
+            var query = new Link<ulong>(any, any, any);
+            _links.Each(link =>
+            {
+                var linkIndex = _links.GetIndex(link);
+                var usages = _links.Count(new ulong[] { any, linkIndex });
+                if (!linksByUsages.TryGetValue(usages, out List<ulong> linksByUsageList))
+                {
+                    linksByUsageList = new List<ulong>();
+                    linksByUsages.Add(usages, linksByUsageList);
+                }
+                linksByUsageList.Add(linkIndex);
+                var frequency = (_linkFrequenciesCache.GetFrequency(_links.GetSource(link), _links.GetTarget(link)) ?? new LinkFrequency<ulong>(0, 0)).Frequency;
+                if (frequency == default)
+                {
+                    frequency = _totalSequenceSymbolFrequencyCounter.Count(linkIndex);
+                }
+                if (!linksByFrequency.TryGetValue(frequency, out List<ulong> linksByFrequencyList))
+                {
+                    linksByFrequencyList = new List<ulong>();
+                    linksByFrequency.Add(frequency, linksByFrequencyList);
+                }
+                linksByFrequencyList.Add(linkIndex);
+                return @continue;
+            }, query);
+
+            // Build matrix of levels on 2D plane (as in optimal variant algorithm)
+
+            // Get the largest repeated patterns
+
         }
 
         private void IndexRow(int y, int width)
