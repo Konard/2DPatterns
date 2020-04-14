@@ -18,6 +18,9 @@
     <None Update="112_113_bw.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="2DPatterns_2_backgrounds.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="input.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

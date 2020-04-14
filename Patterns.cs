@@ -40,7 +40,7 @@ namespace _2DPatterns
             _sourceImagePath = Path.GetFullPath(sourceImagePath);
             _image = new MagickImage(sourceImagePath);
             _pixels = _image.GetPixels();
-            _linksPath = Path.Combine(Path.GetDirectoryName(_sourceImagePath), Path.GetFileNameWithoutExtension(_sourceImagePath) + ".links");
+            _linksPath = Path.ChangeExtension(_sourceImagePath, ".links");
             var memory = new HeapResizableDirectMemory(); //new FileMappedResizableDirectMemory(_linksPath);
             var constants = new LinksConstants<ulong>(enableExternalReferencesSupport: true);
             _links = new UInt64Links(new UInt64UnitedMemoryLinks(memory, UInt64UnitedMemoryLinks.DefaultLinksSizeStep, constants, Platform.Data.Doublets.Memory.IndexTreeType.SizedAndThreadedAVLBalancedTree));
@@ -233,16 +233,32 @@ namespace _2DPatterns
 
             // Print contrasted levels matrix
 
-            for (int y = 1; y < lastY; y++)
-            {
-                for (int x = 1; x < lastX; x++)
-                {
-                    Console.Write("{0:0}", contrastedLevels[x, y]);
-                    Console.Write(' ');
-                }
-                Console.WriteLine();
-            }
+            //for (int y = 1; y < lastY; y++)
+            //{
+            //    for (int x = 1; x < lastX; x++)
+            //    {
+            //        Console.Write("{0:0}", contrastedLevels[x, y]);
+            //    }
+            //    Console.WriteLine();
+            //}
 
+            var outputImagePath = Path.ChangeExtension(_sourceImagePath, ".bf.png");
+            using (var outputImage = new MagickImage(MagickColor.FromRgba(0, 0, 0, 255), width, height))
+            {
+                var pixels = outputImage.GetPixels();
+                for (int y = 1; y < lastY; y++)
+                {
+                    for (int x = 1; x < lastX; x++)
+                    {
+                        if (contrastedLevels[x, y] > 0)
+                        {
+                            pixels.SetPixel(x, y, new byte[] { 255, 255, 255, 255 });
+                        }
+                    }
+                    Console.WriteLine();
+                }
+                outputImage.Write(outputImagePath);
+            }
 
             // Get the largest repeated patterns with lowest frequency (level)
 
