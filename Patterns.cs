@@ -41,7 +41,7 @@ namespace _2DPatterns
             _image = new MagickImage(sourceImagePath);
             _pixels = _image.GetPixels();
             _linksPath = Path.Combine(Path.GetDirectoryName(_sourceImagePath), Path.GetFileNameWithoutExtension(_sourceImagePath) + ".links");
-            var memory = new FileMappedResizableDirectMemory(_linksPath);
+            var memory = new HeapResizableDirectMemory(); //new FileMappedResizableDirectMemory(_linksPath);
             var constants = new LinksConstants<ulong>(enableExternalReferencesSupport: true);
             _links = new UInt64Links(new UInt64UnitedMemoryLinks(memory, UInt64UnitedMemoryLinks.DefaultLinksSizeStep, constants, Platform.Data.Doublets.Memory.IndexTreeType.SizedAndThreadedAVLBalancedTree));
             _addressToRawNumberConverter = new AddressToRawNumberConverter<ulong>();
@@ -170,29 +170,56 @@ namespace _2DPatterns
             var lastX = width - 1;
             var lastY = height - 1;
 
-            for (int x = 1; x < lastX; x++)
+            // We do not calculate edges to simplify the algorithm
+            for (int y = 1; y < lastY; y++)
             {
-                for (int y = 1; y < lastY; y++)
+                for (int x = 1; x < lastX; x++)
                 {
-                    topBottom = GetFrequency(matrix[x - 1, y].Value[0], matrix[x, y].Value[0]);
-                    leftRight = GetFrequency(matrix[x, y - 1].Key[0], matrix[x, y].Key[0]);
-                    bottomTop = GetFrequency(matrix[x, y].Value[0], matrix[x + 1, y].Value[0]);
-                    rightLeft = GetFrequency(matrix[x, y].Key[0], matrix[x, y + 1].Key[0]);
+                    topBottom = GetFrequency(matrix[x, y - 1].Key[0], matrix[x, y].Key[0]);
+                    leftRight = GetFrequency(matrix[x - 1, y].Key[0], matrix[x, y].Key[0]);
+                    bottomTop = GetFrequency(matrix[x, y].Key[0], matrix[x, y + 1].Key[0]);
+                    rightLeft = GetFrequency(matrix[x, y].Key[0], matrix[x + 1, y].Key[0]);
 
                     levels[x, y] = Math.Max(Math.Max(topBottom, leftRight), Math.Max(bottomTop, rightLeft));
                 }
             }
 
+            // Print levels matrix
 
-            for (int x = 1; x < lastX; x++)
+            for (int y = 1; y < lastY; y++)
             {
-                for (int y = 1; y < lastY; y++)
+                for (int x = 1; x < lastX; x++)
                 {
                     Console.Write("{0:0000}", levels[x, y]);
                     Console.Write(' ');
                 }
                 Console.WriteLine();
             }
+
+            // Contrast increase
+
+            var contrastedLevels = new ulong[width, height];
+
+            for (int y = 1; y < lastY; y++)
+            {
+                for (int x = 1; x < lastX; x++)
+                {
+                    contrastedLevels[x, y] = levels[x, y] > 65UL ? 0UL : 1UL;
+                }
+            }
+
+            // Print contrasted levels matrix
+
+            for (int y = 1; y < lastY; y++)
+            {
+                for (int x = 1; x < lastX; x++)
+                {
+                    Console.Write("{0:0}", contrastedLevels[x, y]);
+                    Console.Write(' ');
+                }
+                Console.WriteLine();
+            }
+
 
             // Get the largest repeated patterns with lowest frequency (level)
 
