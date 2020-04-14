@@ -186,15 +186,15 @@ namespace _2DPatterns
 
             // Print levels matrix
 
-            for (int y = 1; y < lastY; y++)
-            {
-                for (int x = 1; x < lastX; x++)
-                {
-                    Console.Write("{0:0000}", levels[x, y]);
-                    Console.Write(' ');
-                }
-                Console.WriteLine();
-            }
+            //for (int y = 1; y < lastY; y++)
+            //{
+            //    for (int x = 1; x < lastX; x++)
+            //    {
+            //        Console.Write("{0:0000}", levels[x, y]);
+            //        Console.Write(' ');
+            //    }
+            //    Console.WriteLine();
+            //}
 
             // Black and white (split to two colors)
 
