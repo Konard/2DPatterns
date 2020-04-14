@@ -196,15 +196,38 @@ namespace _2DPatterns
                 Console.WriteLine();
             }
 
-            // Contrast increase
+            // Black and white (split to two colors)
 
             var contrastedLevels = new ulong[width, height];
+
+            var minimum = ulong.MaxValue;
+            var maximum = ulong.MinValue;
 
             for (int y = 1; y < lastY; y++)
             {
                 for (int x = 1; x < lastX; x++)
                 {
-                    contrastedLevels[x, y] = levels[x, y] > 65UL ? 0UL : 1UL;
+                    var level = levels[x, y];
+                    minimum = minimum > level ? level : minimum;
+                }
+            }
+
+            for (int y = 1; y < lastY; y++)
+            {
+                for (int x = 1; x < lastX; x++)
+                {
+                    var level = levels[x, y];
+                    maximum = maximum < level ? level : maximum;
+                }
+            }
+
+            var middle = (maximum + minimum) / 2;
+
+            for (int y = 1; y < lastY; y++)
+            {
+                for (int x = 1; x < lastX; x++)
+                {
+                    contrastedLevels[x, y] = levels[x, y] > middle ? 0UL : 1UL; // the most frequent should be background (zero)
                 }
             }
 
